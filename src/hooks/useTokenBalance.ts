@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { MYSTIC_DECIMALS, MYSTIC_MINT } from "@/lib/config";
+import {
+  DEMO_BALANCE,
+  DEMO_WINNER_ADDRESS,
+  MYSTIC_DECIMALS,
+  MYSTIC_MINT,
+} from "@/lib/config";
 import { useAddress } from "@/components/AddressContext";
 
 type State = {
@@ -25,6 +30,11 @@ export function useTokenBalance(): State {
     let cancelled = false;
     if (!address) {
       setState({ balance: null, loading: false, error: null });
+      return;
+    }
+    // Demo mode short-circuit: skip RPC, return mock balance.
+    if (address === DEMO_WINNER_ADDRESS) {
+      setState({ balance: DEMO_BALANCE, loading: false, error: null });
       return;
     }
     setState({ balance: null, loading: true, error: null });

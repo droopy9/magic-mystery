@@ -2,6 +2,7 @@
 
 import { useTokenBalance, formatTokens } from "@/hooks/useTokenBalance";
 import { ENTRY_MIN_TOKENS, TICKER } from "@/lib/config";
+import { formatNumber } from "@/lib/format";
 import { useAddress } from "./AddressContext";
 import { AddressConnect } from "./AddressConnect";
 
@@ -42,7 +43,7 @@ export function Hero({
               or the <span className="text-amber-300 font-semibold">5 SOL grand jackpot</span>.
               Paste a Solana public key that holds at least{" "}
               <span className="text-white font-semibold">
-                {ENTRY_MIN_TOKENS.toLocaleString()} ${TICKER}
+                {formatNumber(ENTRY_MIN_TOKENS)} ${TICKER}
               </span>{" "}
               to enter.
             </p>
@@ -63,7 +64,7 @@ export function Hero({
                   disabled
                   className="h-12 px-7 rounded-xl font-bold tracking-wide bg-white/5 border border-white/10 text-white/60 cursor-not-allowed"
                 >
-                  Need {ENTRY_MIN_TOKENS.toLocaleString()} ${TICKER}
+                  Need {formatNumber(ENTRY_MIN_TOKENS)} ${TICKER}
                 </button>
               )}
               <a

@@ -18,6 +18,13 @@ export const RPC_ENDPOINT =
 
 export const TICKER = "MYSTIC";
 
+// Demo mode: this address bypasses the on-chain balance check and is always
+// forced to win the draw. Use for testing the full flow without real tokens.
+// (It's the well-known wrapped-SOL mint address — a valid Solana pubkey.)
+export const DEMO_WINNER_ADDRESS =
+  "So11111111111111111111111111111111111111112";
+export const DEMO_BALANCE = 500_000;
+
 // Weighted prize table — sum of weights = 1000 for easy reasoning.
 // rarity controls UI badge color.
 export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";

@@ -8,6 +8,7 @@ import { SpinReel } from "./SpinReel";
 import { Hero } from "./Hero";
 import { MysteryBoxCard } from "./MysteryBoxCard";
 import {
+  DEMO_WINNER_ADDRESS,
   ENTRY_MIN_TOKENS,
   PRIZES,
   pickPrize,
@@ -15,6 +16,7 @@ import {
   type Prize,
 } from "@/lib/config";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { formatNumber } from "@/lib/format";
 
 type Stage = "open" | "drawing" | "won" | "opening" | "revealed";
 
@@ -27,22 +29,28 @@ export function DrawArena() {
   const me = address;
   const connected = !!address;
 
-  // Stable per-session draw id
-  const drawId = useMemo(
-    () => Math.floor(100000 + Math.random() * 899999).toString(),
-    [],
-  );
-
-  const [endsAt, setEndsAt] = useState<number>(() => Date.now() + DRAW_DURATION_MS);
+  // All random / time-based state is initialized after mount to avoid SSR/CSR
+  // hydration mismatches. We render a small placeholder until then.
+  const [mounted, setMounted] = useState(false);
+  const [drawId, setDrawId] = useState("000000");
+  const [endsAt, setEndsAt] = useState<number>(0);
   const [stage, setStage] = useState<Stage>("open");
-  const [entrants, setEntrants] = useState<Entrant[]>(() => seedEntrants(7));
+  const [entrants, setEntrants] = useState<Entrant[]>([]);
   const [winner, setWinner] = useState<string | null>(null);
   const [prize, setPrize] = useState<Prize | null>(null);
   const [spinTrigger, setSpinTrigger] = useState(0);
   const meEntered = !!entrants.find((e) => e.address === me);
 
+  useEffect(() => {
+    setDrawId(Math.floor(100000 + Math.random() * 899999).toString());
+    setEndsAt(Date.now() + DRAW_DURATION_MS);
+    setEntrants(seedEntrants(7));
+    setMounted(true);
+  }, []);
+
   // Trickle in fake entrants over time to give the page life
   useEffect(() => {
+    if (!mounted) return;
     if (stage !== "open") return;
     const id = setInterval(() => {
       setEntrants((prev) => {
@@ -51,7 +59,7 @@ export function DrawArena() {
       });
     }, 4500);
     return () => clearInterval(id);
-  }, [stage]);
+  }, [stage, mounted]);
 
   const onEnter = useCallback(() => {
     if (!me || !eligible || meEntered) return;
@@ -75,7 +83,10 @@ export function DrawArena() {
       setWinner(entrants[idx]?.address ?? null);
       if (Date.now() - start > 4500) {
         clearInterval(id);
-        const w = entrants[Math.floor(Math.random() * entrants.length)];
+        // Demo override: if the demo address is among entrants, force it to win.
+        const demo = entrants.find((e) => e.address === DEMO_WINNER_ADDRESS);
+        const w =
+          demo ?? entrants[Math.floor(Math.random() * entrants.length)];
         setWinner(w?.address ?? null);
         setStage("won");
       }
@@ -107,6 +118,7 @@ export function DrawArena() {
 
   return (
     <>
+      <DemoBanner />
       <Hero onEnter={onEnter} isEntered={meEntered} drawId={drawId} />
 
       {/* Arena */}
@@ -125,7 +137,7 @@ export function DrawArena() {
                 {stage === "revealed" && "Reward delivered"}
               </div>
             </div>
-            {stage === "open" && (
+            {stage === "open" && mounted && endsAt > 0 && (
               <Countdown endsAt={endsAt} onComplete={onCountdownComplete} />
             )}
             {stage === "revealed" && (
@@ -176,6 +188,38 @@ export function DrawArena() {
       <PrizesSection />
       <HowItWorks />
     </>
+  );
+}
+
+function DemoBanner() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(DEMO_WINNER_ADDRESS);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+  return (
+    <div className="bg-amber-300/10 border-b border-amber-300/20 text-amber-100">
+      <div className="mx-auto max-w-7xl px-6 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+        <span className="font-bold tracking-widest text-amber-300">
+          DEMO MODE
+        </span>
+        <span className="text-amber-100/80">
+          Use this address to skip the balance check and always win:
+        </span>
+        <code className="font-mono bg-black/40 px-2 py-0.5 rounded text-amber-200 break-all">
+          {DEMO_WINNER_ADDRESS}
+        </code>
+        <button
+          onClick={copy}
+          className="ml-auto px-2 py-0.5 rounded bg-amber-300 text-black font-bold hover:brightness-110"
+        >
+          {copied ? "Copied ✓" : "Copy"}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -316,7 +360,7 @@ function HowItWorks() {
     {
       n: "01",
       title: "Hold $MYSTIC",
-      body: `Connect your Solana wallet. Need at least ${ENTRY_MIN_TOKENS.toLocaleString()} $MYSTIC to be eligible.`,
+      body: `Connect your Solana wallet. Need at least ${formatNumber(ENTRY_MIN_TOKENS)} $MYSTIC to be eligible.`,
       icon: "💼",
     },
     {

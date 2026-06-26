@@ -1,5 +1,7 @@
 "use client";
 
+import { formatNumber } from "@/lib/format";
+
 export type Entrant = {
   address: string;
   joinedAt: number;
@@ -59,7 +61,7 @@ export function EntrantsList({
                     )}
                   </div>
                   <div className="text-[11px] text-white/40">
-                    {e.balance.toLocaleString()} $MYSTIC
+                    {formatNumber(e.balance)} $MYSTIC
                   </div>
                 </div>
               </div>
