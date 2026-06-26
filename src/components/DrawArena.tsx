@@ -20,7 +20,7 @@ import { formatNumber } from "@/lib/format";
 
 type Stage = "open" | "drawing" | "won" | "opening" | "revealed";
 
-const DRAW_DURATION_MS = 60_000; // 60-second countdown per draw
+const DRAW_DURATION_MS = 20_000; // 20-second countdown per draw
 
 export function DrawArena() {
   const { address } = useAddress();
