@@ -71,6 +71,7 @@ body {
   background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
   background-size: 200% 100%;
   animation: shine 3s linear infinite;
+  pointer-events: none;
 }
 
 .scrollbar-none::-webkit-scrollbar { display: none; }

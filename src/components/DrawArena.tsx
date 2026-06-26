@@ -233,9 +233,9 @@ function DemoBanner() {
 function ClosedBoxArt({ drawing }: { drawing: boolean }) {
   return (
     <div className="relative rounded-2xl border border-white/10 bg-gradient-to-b from-black/60 to-black/30 h-72 overflow-hidden flex items-center justify-center">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(200,59,255,0.18),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(200,59,255,0.18),transparent_60%)]" />
       <div className="absolute inset-0 shine opacity-40" />
-      <div className="text-center">
+      <div className="relative z-10 text-center">
         <div className="text-8xl floaty">{drawing ? "🎲" : "🎁"}</div>
         <div className="mt-4 text-xs tracking-[0.3em] text-white/50">
           {drawing ? "SELECTING WINNER" : "BOX LOCKED · AWAITING WINNER"}
@@ -267,7 +267,7 @@ function WinnerCallout({
   return (
     <div className="relative rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-400/10 via-fuchsia-500/10 to-violet-500/10 h-72 overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 shine opacity-50" />
-      <div className="text-center px-6">
+      <div className="relative z-10 text-center px-6">
         <div className="text-[10px] tracking-[0.3em] text-amber-300 font-bold">
           WINNER SELECTED
         </div>

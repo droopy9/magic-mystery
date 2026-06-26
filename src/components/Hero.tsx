@@ -88,7 +88,7 @@ export function Hero({
 
           {/* Right: stacked locked boxes preview */}
           <div className="relative">
-            <div className="absolute -inset-10 bg-[radial-gradient(circle_at_center,rgba(200,59,255,0.25),transparent_60%)] blur-2xl" />
+            <div className="pointer-events-none absolute -inset-10 bg-[radial-gradient(circle_at_center,rgba(200,59,255,0.25),transparent_60%)] blur-2xl" />
             <FeatureBoxStack />
           </div>
         </div>
