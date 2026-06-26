@@ -81,6 +81,9 @@ export function SpinReel({
       window.clearTimeout(tid);
       cancelRef.current.forEach((r) => cancelAnimationFrame(r));
       cancelRef.current = [];
+      // Reset the guard so the second invocation in React Strict Mode (or
+      // any future trigger change) can re-schedule the animation.
+      startedFor.current = -1;
     };
   }, [trigger, prize, winningIndex, onSettled]);
 
