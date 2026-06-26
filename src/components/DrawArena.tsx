@@ -99,6 +99,13 @@ export function DrawArena() {
     setPrize(p);
     setStage("opening");
     setSpinTrigger((n) => n + 1);
+    // Scroll the reel into view so the spin is visible even if the user
+    // had scrolled away while the countdown ran.
+    setTimeout(() => {
+      document
+        .getElementById("spin-viewport")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
   }, [stage]);
 
   const onSpinSettled = useCallback(() => {

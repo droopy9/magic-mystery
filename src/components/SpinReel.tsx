@@ -21,6 +21,7 @@ export function SpinReel({
   const [phase, setPhase] = useState<Phase>("idle");
   const [offset, setOffset] = useState(0);
   const startedFor = useRef<number>(-1);
+  const cancelRef = useRef<number[]>([]);
 
   // Build a long pseudo-random strip of prize tiles, with the winning prize
   // placed at a deterministic index near the end.
@@ -49,29 +50,38 @@ export function SpinReel({
     if (trigger === startedFor.current) return;
     startedFor.current = trigger;
 
+    // Step 1: switch phase so the transition style is rendered, offset stays 0.
     setPhase("spinning");
     setOffset(0);
 
-    // Compute target offset to land the winning tile under the cursor.
-    // Reel translates left by `offset` px. Center of viewport is at viewportWidth/2.
-    // We place center on the winning tile center.
-    const viewportWidth =
-      document.getElementById("spin-viewport")?.clientWidth ?? 800;
-    const tileCenter = winningIndex * (TILE_W + TILE_GAP) + TILE_W / 2;
-    // Small random offset so it doesn't always land perfectly centered
-    const jitter = (Math.random() - 0.5) * (TILE_W * 0.4);
-    const target = tileCenter - viewportWidth / 2 + jitter;
-
-    requestAnimationFrame(() => {
-      setOffset(target);
+    // Step 2: wait two animation frames for React to commit the new
+    // `transition` CSS, then change the transform value. Without this gap
+    // the browser may merge both DOM updates into one paint and skip the
+    // animation entirely.
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(() => {
+        const viewportWidth =
+          document.getElementById("spin-viewport")?.clientWidth ?? 800;
+        const tileCenter = winningIndex * (TILE_W + TILE_GAP) + TILE_W / 2;
+        const jitter = (Math.random() - 0.5) * (TILE_W * 0.4);
+        const target = tileCenter - viewportWidth / 2 + jitter;
+        setOffset(target);
+      });
+      cancelRef.current.push(raf2);
     });
+    cancelRef.current.push(raf1);
 
-    const dur = 6200; // matches CSS transition
-    const id = setTimeout(() => {
+    const dur = 6200;
+    const tid = window.setTimeout(() => {
       setPhase("settled");
       onSettled?.(prize);
     }, dur + 100);
-    return () => clearTimeout(id);
+
+    return () => {
+      window.clearTimeout(tid);
+      cancelRef.current.forEach((r) => cancelAnimationFrame(r));
+      cancelRef.current = [];
+    };
   }, [trigger, prize, winningIndex, onSettled]);
 
   return (
